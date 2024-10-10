@@ -1,58 +1,65 @@
-/*
- * A simple example to interface with rdm6300 rfid reader.
- *
- * Connect the rdm6300 to VCC=5V, GND=GND, TX=any GPIO (this case GPIO-04)
- * Note that the rdm6300's TX line is 3.3V level,
- * so it's safe to use with both AVR* and ESP* microcontrollers.
- * Note that on SAMD the RX_PIN is ignored, the default is Serial1 (pin0),
- * but if specify rdm6300.begin(RDM6300_RX_PIN, 2); then Serial2 (pin30) is used.
- *
- * This example uses SoftwareSerial, please read its limitations here:
- * https://www.arduino.cc/en/Reference/softwareSerial
- *
- * Arad Eizen (https://github.com/arduino12).
- */
-
 #include <Arduino.h>
 #include <rdm6300.h>
 
-#define RDM6300_ORGANIC_RX_PIN 10 // read the SoftwareSerial doc above! may need to change this pin to 10...
-#define RDM6300_RECYCLABE_RX_PIN 12
+//#define RDM6300_ORGANIC_RX_PIN 10 // read the SoftwareSerial doc above! may need to change this pin to 10...
+//#define RDM6300_RECYCLABE_RX_PIN 12
 #define ORGANIC_SERVO_PIN 13
-#define RECYCLABLE_SERVO_PIN 11
+//#define RECYCLABLE_SERVO_PIN 11
 
-Rdm6300 organicRdm6300; 
+Rdm6300 organicRdm6300;
 Rdm6300 recyclableRdm6300;
-uint8_t organicServoSituation;
-uint8_t recyclableServoSituation;
+uint32_t organicServoSituation;
+uint32_t recyclableServoSituation;
+uint32_t addresses[] = {151615615, 211131312, 115651666, 328329233};
+uint8_t index = 0;
+uint32_t servoSituation;
+bool ackReceived = false;
 
-void setup()
-{
+void setup() {
   Serial.begin(9600);
 
-  /*pinMode(ORGANIC_SERVO_PIN, OUTPUT);
-  pinMode(RECYCLABLE_SERVO_PIN, OUTPUT);
-  organicRdm6300.begin(RDM6300_ORGANIC_RX_PIN, 1);
-  recyclableRdm6300.begin(RDM6300_RECYCLABE_RX_PIN, 2);
+  pinMode(ORGANIC_SERVO_PIN, OUTPUT);
+  // pinMode(RECYCLABLE_SERVO_PIN, OUTPUT);
+  // organicRdm6300.begin(RDM6300_ORGANIC_RX_PIN, 1);
+  // recyclableRdm6300.begin(RDM6300_RECYCLABE_RX_PIN, 2);
   while (!Serial) { ; }
-  Serial.println("\nGame started");*/
+  Serial.println("\nGame started");
 }
 
-void loop()
-{
-  if(organicRdm6300.get_new_tag_id() != 0)
-    Serial.write("1", organicRdm6300.get_new_tag_id());
-  if(organicRdm6300.get_tag_id() != 0)
-	  Serial.write("1", organicRdm6300.get_tag_id());
-  if(recyclableRdm6300.get_new_tag_id() != 0)
-    Serial.write("2", recyclabeRdm6300.get_new_tag_id());
-  if(recyclabeRdm6300.get_tag_id() != 0)
-	  Serial.write("2", recyclableRdm6300.get_tag_id());
+void loop() {
+  String addressStr;
+  if (index % 2 == 0) {
+    addressStr = String('1') + String(addresses[index]);
+  } else {
+    addressStr = String('2') + String(addresses[index]);
+  }
+  
+  Serial.write(addressStr.c_str(), addressStr.length());
+  Serial.write('\n'); // Add a newline character for better readability on the receiver side
+  
+  // Wait for ACK
+  ackReceived = false;
+  while (1) { // Wait for 1 second for an ACK
+    if (Serial.available()) {
+      char ack = Serial.read();
+      if (ack == 'A') { // Assuming 'A' is the ACK character
+        ackReceived = true;
+        break;
+      }
+    }
+  }
+  index++;
+  if (index >= 4) index = 0;
+  delay(1000);
 
-  servoSituation = Serial.read();
-  if (servoSitutaioin)*/
+  if (Serial.available()) {
+    servoSituation = Serial.read();
+    if (servoSituation == '1') {
+      digitalWrite(ORGANIC_SERVO_PIN, 255);
+    } else {
+      digitalWrite(ORGANIC_SERVO_PIN, 127);
+    }
+  }
 
-
-
-	delay(1000);
+  delay(1000);
 }
