@@ -1,6 +1,7 @@
 import pygame
 import sys
 from game_elements import *
+from arduino_communication import TrashVerifier as TV
 
 # Inicializando o Pygame
 pygame.init()
@@ -34,6 +35,7 @@ def main():
     frame_atual = 1
 
     while True:
+        TV.get_data()
         # Verifica eventos (como fechamento da janela)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -69,4 +71,8 @@ def main():
 
 # Chamando a função principal
 if __name__ == "__main__":
-    main()
+    while(trashScenarios < 7):
+        while(trashNumber >= 0):
+            get_data()
+        trashNumber = 5
+        trashScenarios += 1
