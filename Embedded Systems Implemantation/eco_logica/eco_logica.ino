@@ -12,18 +12,23 @@ uint32_t organicServoSituation;
 uint32_t recyclableServoSituation;
 uint32_t addresses[] = {151615615, 211131312, 115651666, 328329233};
 uint8_t index = 0;
-uint32_t servoSituation;
-bool ackReceived = false;
+char servoSituation;
 
 void setup() {
   Serial.begin(9600);
 
   pinMode(ORGANIC_SERVO_PIN, OUTPUT);
+ // pinMode(12, OUTPUT);
   // pinMode(RECYCLABLE_SERVO_PIN, OUTPUT);
   // organicRdm6300.begin(RDM6300_ORGANIC_RX_PIN, 1);
   // recyclableRdm6300.begin(RDM6300_RECYCLABE_RX_PIN, 2);
   while (!Serial) { ; }
-  Serial.println("\nGame started");
+  while (Serial.available()) {
+    Serial.read();
+  }
+  Serial.write('s');
+  //analogWrite(ORGANIC_SERVO_PIN, 191);
+  //Serial.println("\nGame started");
 }
 
 void loop() {
@@ -35,31 +40,21 @@ void loop() {
   }
   
   Serial.write(addressStr.c_str(), addressStr.length());
-  Serial.write('\n'); // Add a newline character for better readability on the receiver side
+  //Serial.write('\n'); // Add a newline character for better readability on the receiver side
   
-  // Wait for ACK
-  ackReceived = false;
-  while (1) { // Wait for 1 second for an ACK
-    if (Serial.available()) {
-      char ack = Serial.read();
-      if (ack == 'A') { // Assuming 'A' is the ACK character
-        ackReceived = true;
-        break;
-      }
-    }
-  }
   index++;
   if (index >= 4) index = 0;
-  delay(1000);
 
-  if (Serial.available()) {
-    servoSituation = Serial.read();
-    if (servoSituation == '1') {
-      digitalWrite(ORGANIC_SERVO_PIN, 255);
-    } else {
-      digitalWrite(ORGANIC_SERVO_PIN, 127);
-    }
+  while(Serial.available() <= 0){;}
+
+  servoSituation = Serial.read();
+
+  if (servoSituation == '1') {
+    analogWrite(ORGANIC_SERVO_PIN, 254);
+    //digitalWrite(12, HIGH);
+  } else {
+    analogWrite(ORGANIC_SERVO_PIN, 1);
+   // digitalWrite(12, LOW);
   }
 
-  delay(1000);
 }
