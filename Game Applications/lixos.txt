@@ -1,0 +1,30 @@
+Organicos:
+ - Casca de banana ok
+ - Casca de Ovo ok
+ - Miolo da maça ok
+ - Espinha de peixe ok
+ - Casca de laranja ok
+
+Recicláveis:
+ - Copo plástico descartável: categoria de plástico ok
+ - Garrafa PET: plástico reciclável ok
+ - Lata de refrigerante ok
+ - Garrafa de Vidro ok
+ - Jornais ok
+
+
+Scenario 1
+- casca de banana (1133, 658)
+- lata de refrigerante (331, 705)
+- jornal (1619, 843)
+
+Scenario 2
+- espinha de peixe
+- casca de laranja
+- garrafa de vidro
+- copo plastico
+
+Scenario 3
+- casca de ovo
+- miolo da maca
+- garrafa pet
