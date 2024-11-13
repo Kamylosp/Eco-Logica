@@ -1,86 +1,92 @@
 import pandas as pd
 import serial
 import time
-#Class to ease the implementation
-class TrashVerifier:
-    def __init__(self, trash_number=5, trash_scenarios=1, port='COM5', baud_rate=9600, byte_number=10, csv_file="trash.csv"):
-        self.trash_number = trash_number #Number of trashes per scenario
-        self.trash_scenarios = trash_scenarios #Number of scenarios until the end of the game
-        self.port = port #Port for serial communication
-        self.baud_rate = baud_rate #Baudrate
-        self.byte_number = byte_number #Size of the message sent by the arduino
-        self.csv_file = csv_file #Sheet with the trashes
-        self.trash_sheet = pd.read_csv(self.csv_file)
 
-        #Serial communication initialization
-        self.ser = serial.Serial(self.port, self.baud_rate)
+# Classe para facilitar a implementação
+class TrashVerifier:
+    def __init__(self, trash_number=4, trash_scenarios=1, port='COM5', baud_rate=9600, byte_number=12, csv_file='trash.csv'):
+        self.trash_number = trash_number  # Número de lixos por cenário
+        self.trash_scenarios = trash_scenarios  # Número de cenários até o fim do jogo
+        self.port = port  # Porta para comunicação serial
+        self.baud_rate = baud_rate  # Taxa de transmissão
+        self.byte_number = byte_number  # Tamanho da mensagem enviada pelo Arduino
+        self.csv_file = csv_file  # Arquivo CSV com os dados dos lixos
+
+        try:
+            # Tentativa de leitura do arquivo CSV
+            self.trash_sheet = pd.read_csv(self.csv_file)  # Leitura do CSV
+        except FileNotFoundError:
+            print(f"Erro: O arquivo {self.csv_file} não foi encontrado.")
+            self.trash_sheet = pd.DataFrame()  # Cria um DataFrame vazio para evitar outros erros
+
+        try:
+            # Inicialização da comunicação serial
+            self.ser = serial.Serial(self.port, self.baud_rate)
+        except serial.SerialException as e:
+            print(f"Erro ao abrir a porta serial: {e}")
+            self.ser = None
 
     def __del__(self):
-        #Destroy the serial instance when the serial port closes
-        if self.ser.is_open:
+        # Fecha a instância da comunicação serial quando a porta é fechada, se a porta estiver aberta
+        if self.ser and self.ser.is_open:
             self.ser.close()
 
     def trash_verify(self, data):
-        trash_type = int(data[0]) #The first number of the message is the type of the trash is type of trash #1 for organic and #2 for recyclabe
-        id = int(''.join(map(str, data[1:10]))) #The rest of the message, which contains the id
+        trash_type = int(data[0])  # O primeiro número da mensagem indica o tipo do lixo (1 para orgânico, 2 para reciclável)
+        id = int(data[1:])  # O restante da mensagem contém o ID do lixo
 
-        #Searches the id in the CSV, takes the name, scenario and type
+        # Pesquisa o ID no CSV e pega o nome, cenário e tipo
         if id in self.trash_sheet['Endereco'].values:
             line = self.trash_sheet[self.trash_sheet['Endereco'] == id]
             name = line['Nome'].values[0]
             scenario = line['Cenario'].values[0]
             type_required = 1 if line['Tipo'].values[0] == 'organico' else 2
-
-            #print("Name: ", name, ",Scenario: ", scenario, ",Type_required: ", type_required)
         else:
-            return
+            return  # Retorna sem fazer nada se o ID não for encontrado
 
-        #Verifies if the trash is being read in the correct scenario and if it is being read in the correct bin
+        # Verifica se o lixo está sendo lido no cenário correto e no tipo correto
         if scenario == self.trash_scenarios:
-            #print(self.trash_scenarios, scenario)
             if trash_type == type_required:
-                #print(trash_type, type_required)
-                self.trash_number -= 1 #To change the scenario when the trashes of that scenario finish
-                return 1  #Correct answer
+                self.trash_number -= 1  # Decrementa o número de lixos restantes
+                return 1  # Resposta correta
             else:
-                return 0  #Correct bin, in the wrong scenario, implement a graphic warn to the user
+                return 0  # Tipo incorreto
         else:
-            return 0  #Wrong bin, in the Wrong scenario, implement a graphic warn to the user
-    
-    #Function to send data to the arduino, sends 1 if the answer is correct and 0 if the answer is incorrect
+            return 0  # Cenário incorreto
+
+    # Função para enviar dados para o Arduino (1 para resposta correta e 0 para incorreta)
     def send_data(self, servo_situation):
-        if self.ser.is_open:
-            print("Data Sent, servo situation: ", str(servo_situation).encode())
-            self.ser.write(str(servo_situation).encode())
-            #self.ser.write(bytes([servo_situation])) 
+        if self.ser and self.ser.is_open:
+            print(f"Data Sent, servo situation: {str(servo_situation)}")
+            self.ser.write(bytes([servo_situation]))  # Envia os dados como byte
         else:
             print("A porta serial não está aberta.")
-    #Function to get data from the arduino
+
+    # Função para obter dados do Arduino
     def get_data(self):
-        #Clears the buffer before start reading
-        print("Waiting for start signal ('s') from Arduino...")
+        print("Aguardando sinal de início ('s') do Arduino...")
         while True:
-            if self.ser.in_waiting > 0:  # Verifica se há dados na porta
+            if self.ser and self.ser.in_waiting > 0:  # Verifica se há dados na porta
                 start_signal = self.ser.read(1).decode()  # Lê 1 byte
-                if start_signal == 's':  # Se o sinal for 's', comece a processar
-                    print("Start signal received. Beginning data processing.")
+                if start_signal == 's':  # Se o sinal for 's', começa a processar
+                    print("Sinal de início recebido. Iniciando o processamento de dados.")
                     break  # Sai do loop após receber o sinal
 
-        while handler.trash_scenarios < 7:
-            while handler.trash_number >= 0:
-                if self.ser.in_waiting >= self.byte_number:
-                    data = self.ser.read(self.byte_number)
+        while self.trash_scenarios < 7:
+            while self.trash_number > 0:
+                if self.ser and self.ser.in_waiting >= self.byte_number:
+                    data = self.ser.read(self.byte_number)  # Lê os dados da porta serial
                     data_str = data.decode().strip()  # Decodifica os dados
-                    trash_type = int(data_str[0])  # Primeiro número
-                    id = int(data_str[1:])  # Os outros 9 números
-                    print(f"Trash Type: {trash_type}, ID: {id}")
-                    self.send_data(self.trash_verify(data_str))
+                    trash_type = int(data_str[0])  # Tipo de lixo
+                    id = int(data_str[1:])  # O ID do lixo
+                    print(f"Tipo de Lixo: {trash_type}, ID: {id}")
+                    self.send_data(self.trash_verify(data_str))  # Envia a resposta ao Arduino
                     time.sleep(2)
                 else:
                     time.sleep(0.1)
-            handler.trash_number = 5
-            #handler.trash_scenarios += 1
+            self.trash_number = 5  # Reseta o número de lixos para o próximo cenário
+            self.trash_scenarios += 1  # Incrementa para o próximo cenário
 
 if __name__ == "__main__":
-    handler = TrashVerifier()
-    handler.get_data()
+    handler = TrashVerifier()  # Cria uma instância da classe TrashVerifier
+    handler.get_data()  # Inicia o processo de obtenção de dados do Arduino
