@@ -19,12 +19,13 @@ Scenario 1
 - jornal (1619, 843)
 
 Scenario 2
-- espinha de peixe
-- casca de laranja
-- garrafa de vidro
-- copo plastico
+- espinha de peixe  (794, 612)
+- casca de laranja  (1115, 534)
+- garrafa de vidro  (472, 585)
+- copo plastico     (335, 714)
 
+1366, 768
 Scenario 3
-- casca de ovo
-- miolo da maca
-- garrafa pet
+- casca de ovo pos:(181, 677)
+- miolo da maca (1073, 622)
+- garrafa pet  (585, 460)

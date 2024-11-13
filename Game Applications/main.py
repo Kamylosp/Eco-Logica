@@ -16,6 +16,7 @@ window_heigth = size_window.current_h
 window = pygame.display.set_mode((window_width, window_heigth), pygame.FULLSCREEN)
 pygame.display.set_caption('Eco Logica')
 
+
 # state = 0 -> elemento não depositado
 # state = 1 -> elemento depositado, aviso sendo mostrado
 # state = 2 -> lixo já guardado 
@@ -23,7 +24,6 @@ state_elements = {"casca_banana": 0,
                 "casca_laranja": 0,
                 "casca_ovo": 0,
                 "copo_plastico": 0,
-                "espinha_peixe": 0,
                 "garrafa_pet": 0,
                 "garrafa_vidro": 0,
                 "jornal": 0,
@@ -48,7 +48,6 @@ Image_waste = { "casca_banana": pygame.image.load("Images/Waste/casca_banana.png
                 "casca_laranja": pygame.image.load("Images/Waste/casca_laranja.png"),
                 "casca_ovo": pygame.image.load("Images/Waste/casca_ovo.png"),
                 "copo_plastico": pygame.image.load("Images/Waste/copo_plastico.png"),
-                "espinha_peixe": pygame.image.load("Images/Waste/espinha_peixe.png"),
                 "garrafa_pet": pygame.image.load("Images/Waste/garrafa_pet.png"),
                 "garrafa_vidro": pygame.image.load("Images/Waste/garrafa_vidro.png"),
                 "jornal": pygame.image.load("Images/Waste/jornal.png"),
@@ -70,47 +69,73 @@ def main():
                     pygame.quit()
                     sys.exit()
 
-                if event.key == pygame.K_b:
+                if event.key == pygame.K_a:
                     state_elements["casca_banana"] = 1
-
-                if event.key == pygame.K_r:
+                if event.key == pygame.K_b:
                     state_elements["lata_refrigerante"] = 1
-
-                if event.key == pygame.K_j:
+                if event.key == pygame.K_c:
                     state_elements["jornal"] = 1
+                
+                if event.key == pygame.K_d:
+                    state_elements["casca_laranja"] = 1
+                if event.key == pygame.K_e:
+                    state_elements["garrafa_vidro"] = 1
+                if event.key == pygame.K_g:
+                    state_elements["copo_plastico"] = 1
+
+                if event.key == pygame.K_h:
+                    state_elements["casca_ovo"] = 1
+                if event.key == pygame.K_i:
+                    state_elements["garrafa_pet"] = 1
+                if event.key == pygame.K_j:
+                    state_elements["maca"] = 1
+
 
                 if event.key == pygame.K_SPACE:
 
                     if frame_atual == 1 and (state_elements['casca_banana'] + state_elements['jornal'] + state_elements['lata_refrigerante']) == 6:
                         frame_atual = 2
+                    elif frame_atual == 2 and (state_elements['casca_laranja'] + state_elements['copo_plastico'] + state_elements['garrafa_vidro']) == 6:
+                        frame_atual = 3
+                    elif frame_atual == 3 and (state_elements['casca_ovo'] + state_elements['garrafa_pet'] + state_elements['maca']) == 6:
+                        frame_atual = 0
+
+                        state_elements['casca_banana'] = 0
+                        state_elements['jornal'] = 0
+                        state_elements['lata_refrigerante'] = 0
+
+                        state_elements['copo_plastico'] = 0
+                        state_elements['garrafa_vidro'] = 0
+                        state_elements['casca_laranja'] = 0
+
+                        state_elements['casca_ovo'] = 0
+                        state_elements['garrafa_pet'] = 0
+                        state_elements['maca'] = 0
 
                     # Verificação para tirar barra de aviso de correto
                     if state_elements['casca_banana'] == 1:
                         state_elements['casca_banana'] = 2
-                    
-                    if state_elements['jornal'] == 1:
+                    elif state_elements['jornal'] == 1:
                         state_elements['jornal'] = 2
-                    
-                    if state_elements['lata_refrigerante'] == 1:
+                    elif state_elements['lata_refrigerante'] == 1:
                         state_elements['lata_refrigerante'] = 2
-                        
 
-                if event.key == pygame.K_RIGHT:
-                    if frame_atual == 0:
-                        pass
+                    elif state_elements['copo_plastico'] == 1:
+                        state_elements['copo_plastico'] = 2
+                    elif state_elements['garrafa_vidro'] == 1:
+                        state_elements['garrafa_vidro'] = 2
+                    elif state_elements['casca_laranja'] == 1:
+                        state_elements['casca_laranja'] = 2
 
-                    elif frame_atual == 1:
-                        frame_atual = 2
-
-                    elif frame_atual == 2:
-                        frame_atual = 3
-                    
-                    elif frame_atual == 3:
-                        frame_atual = 1
+                    elif state_elements['casca_ovo'] == 1:
+                        state_elements['casca_ovo'] = 2
+                    elif state_elements['garrafa_pet'] == 1:
+                        state_elements['garrafa_pet'] = 2
+                    elif state_elements['maca'] == 1:
+                        state_elements['maca'] = 2
 
             # Verifica se o botão foi clicado
             if event.type == pygame.MOUSEBUTTONDOWN:
-                print(f"scenario: {frame_atual} pos:{event.pos}")
                 if btn_quit.collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
@@ -141,11 +166,11 @@ def main():
             btn_home_icon, btn_quit = buttons_scenario_1(image_home_icon, window_heigth, window_width, window, font_quit_button)
 
         elif frame_atual == 2:
-            draw_frame_scenario_2(image_scenario_2, window_width, window_heigth, window, font_title_eco_logica, Image_waste)
+            draw_frame_scenario_2(image_scenario_2, window_width, window_heigth, window, Image_waste, state_elements)
             btn_home_icon, btn_quit = buttons_scenario_2(image_home_icon, window_heigth, window_width, window, font_quit_button)
         
         elif frame_atual == 3:
-            draw_frame_scenario_3(image_scenario_3, window_width, window_heigth, window, font_title_eco_logica, Image_waste)
+            draw_frame_scenario_3(image_scenario_3, window_width, window_heigth, window, Image_waste, state_elements)
             btn_home_icon, btn_quit = buttons_scenario_3(image_home_icon, window_heigth, window_width, window, font_quit_button)
 
         # Atualiza a tela
@@ -155,10 +180,3 @@ def main():
 if __name__ == "__main__":
     print("window", window_heigth)
     main()
-
-
-    # while(trashScenarios < 7):
-    #     while(trashNumber >= 0):
-    #         get_data()
-    #     trashNumber = 5
-    #     trashScenarios += 1
