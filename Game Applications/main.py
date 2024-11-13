@@ -72,24 +72,23 @@ def main():
 
                 if event.key == pygame.K_b:
                     state_elements["casca_banana"] = 1
-                
+
                 if event.key == pygame.K_r:
                     state_elements["lata_refrigerante"] = 1
-                
+
                 if event.key == pygame.K_j:
                     state_elements["jornal"] = 1
 
                 if event.key == pygame.K_SPACE:
                     # Verificação para tirar barra de aviso de correto
-                    if frame_atual == 1:
-                        if state_elements['casca_banana'] == 1:
-                            state_elements['casca_banana'] = 2
-                        
-                        if state_elements['jornal'] == 1:
-                            state_elements['jornal'] = 2
-                        
-                        if state_elements['lata_refrigerante'] == 1:
-                            state_elements['lata_refrigerante'] = 2
+                    if state_elements['casca_banana'] == 1:
+                        state_elements['casca_banana'] = 2
+                    
+                    if state_elements['jornal'] == 1:
+                        state_elements['jornal'] = 2
+                    
+                    if state_elements['lata_refrigerante'] == 1:
+                        state_elements['lata_refrigerante'] = 2
                         
 
                 if event.key == pygame.K_RIGHT:
@@ -150,7 +149,9 @@ def main():
 
 # Chamando a função principal
 if __name__ == "__main__":
+    print("window", window_heigth)
     main()
+
 
     # while(trashScenarios < 7):
     #     while(trashNumber >= 0):
