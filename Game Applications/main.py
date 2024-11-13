@@ -80,6 +80,10 @@ def main():
                     state_elements["jornal"] = 1
 
                 if event.key == pygame.K_SPACE:
+
+                    if frame_atual == 1 and (state_elements['casca_banana'] + state_elements['jornal'] + state_elements['lata_refrigerante']) == 6:
+                        frame_atual = 2
+
                     # Verificação para tirar barra de aviso de correto
                     if state_elements['casca_banana'] == 1:
                         state_elements['casca_banana'] = 2
