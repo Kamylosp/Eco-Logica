@@ -1,24 +1,26 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <MFRC522.h>
+#include<Servo.h>
+#define ORGANIC_SERVO_PIN 11
+#define RECYCLABLE_SERVO_PIN 12
+#define SS_PIN_1 10 
+#define SS_PIN_2 8   
+#define RST_PIN 9    
 
-#define SS_PIN 10  // Pino de seleção (SDA) conectado ao pino digital 10 do Arduino Mega 2560
-#define RST_PIN 9  // Pino de reset conectado ao pino digital 9 do Arduino Mega 2560
-
-MFRC522 rfid(SS_PIN, RST_PIN);  // Cria a instância do objeto MFRC522
-
-#define ORGANIC_SERVO_PIN 13
-//#define RECYCLABLE_SERVO_PIN 11
-
-uint8_t cardIndex = 0;  // Renomeado de 'index' para 'cardIndex'
-char servoSituation;
+MFRC522 rfid1(SS_PIN_1, RST_PIN); 
+MFRC522 rfid2(SS_PIN_2, RST_PIN);  
+Servo organicServo;
+Servo recyclableServo;
 
 void setup() {
-  Serial.begin(9600);
-  SPI.begin();  // Inicializa o barramento SPI
-  rfid.PCD_Init();  // Inicializa o MFRC522
+  Serial.begin(9600);  
+  SPI.begin(); 
+  rfid1.PCD_Init();  
+  rfid2.PCD_Init();  
 
-  pinMode(ORGANIC_SERVO_PIN, OUTPUT);
+  organicServo.attach(ORGANIC_SERVO_PIN);
+  recyclableServo.attach(RECYCLABLE_SERVO_PIN);
 
   while (!Serial) { ; }
   while (Serial.available()) {
@@ -28,21 +30,21 @@ void setup() {
 }
 
 void loop() {
-  // Procura por novos cartões
+  RFID(rfid1, 1); //ORGANIC
+  RFID(rfid2, 2); //RECYCLABLE
+}
+
+void RFID(MFRC522 &rfid, int sensorNumber) {
   if (!rfid.PICC_IsNewCardPresent()) {
-    return;
+    return; // No new card
   }
 
-  // Seleciona um dos cartões presentes
   if (!rfid.PICC_ReadCardSerial()) {
-    return;
+    return; // Could not read card
   }
 
   String uidString = "";
-  
-  // Constrói o UID do cartão como um único número inteiro em uma string
   for (byte i = 0; i < rfid.uid.size; i++) {
-    // Adiciona zeros à esquerda, se necessário
     if (rfid.uid.uidByte[i] < 10) {
       uidString += "00";
     } else if (rfid.uid.uidByte[i] < 100) {
@@ -51,29 +53,19 @@ void loop() {
     uidString += String(rfid.uid.uidByte[i]);
   }
 
-  String addressStr;
-  if (cardIndex % 2 == 0) {
-    addressStr = String('1') + uidString;
-  } else {
-    addressStr = String('2') + uidString;
-  }
-  
-  Serial.write(addressStr.c_str(), addressStr.length());
-  // Serial.write('\n'); // Adicione um caractere de nova linha para melhor legibilidade do lado do receptor
-  
-  cardIndex++;  // Incrementando 'cardIndex'
-  if (cardIndex >= 2) cardIndex = 0;
+  Serial.print(String(sensorNumber) + uidString);
 
-  while (Serial.available() <= 0) { ; }
-
-  servoSituation = Serial.read();
+  while (!Serial.available()) { ; }
+  char servoSituation = Serial.read();
 
   if (servoSituation == '1') {
-    digitalWrite(ORGANIC_SERVO_PIN, HIGH);
+    if (sensorNumber == 1)
+      organicServo.write(180);
+    else recyclableServo.write(180);
   } else {
-    digitalWrite(ORGANIC_SERVO_PIN, LOW);
+    if (sensorNumber == 1)
+      organicServo.write(0);
+    else recyclableServo.write(0);
   }
-
-  // Para a leitura do cartão
   rfid.PICC_HaltA();
 }
