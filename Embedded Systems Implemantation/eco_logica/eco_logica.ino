@@ -59,13 +59,24 @@ void RFID(MFRC522 &rfid, int sensorNumber) {
   char servoSituation = Serial.read();
 
   if (servoSituation == '1') {
-    if (sensorNumber == 1)
+    if (sensorNumber == 1){
       organicServo.write(180);
-    else recyclableServo.write(180);
-  } else {
-    if (sensorNumber == 1)
+      delay(2000);
+      organicServo.write(90);
+    } else{
+      recyclableServo.write(180);
+      delay(2000);
+      recyclableServo.write(90);
+  }} else {
+    if (sensorNumber == 1){
       organicServo.write(0);
-    else recyclableServo.write(0);
-  }
+      delay(2000);
+      organicServo.write(90);
+    }
+    else {
+      recyclableServo.write(0);
+      delay(2000);
+      recyclableServo.write(90);
+  }}
   rfid.PICC_HaltA();
 }

@@ -2,7 +2,8 @@ import pandas as pd
 import serial
 import time
 
-trash_number = 3
+trash_number = int(0)
+verify = 0
 trash_scenarios = 1
 port = 'COM8'
 baud_rate = 9600
@@ -13,8 +14,8 @@ trash_sheet = pd.read_csv(csv_file)
 
 ser = serial.Serial(port, baud_rate)
 
-def trash_verify(data):
-
+def trash_verify(data, verify):
+    global trash_number
     trash_type = data[0]
     id = int(''.join(map(str, data[1:])))
 
@@ -31,11 +32,14 @@ def trash_verify(data):
         # print(trash_type)
         # print(type_required)
         if int(trash_type) == int(type_required):
-            trash_number -= 1
+            trash_number+=1
+            verify = 1
             return 1 
         else:
+            verify = 0
             return 0  
     else:
+        verify = 0
         return 0  
 
 def send_data(servo_situation):
@@ -45,12 +49,12 @@ def send_data(servo_situation):
     else:
         print("A porta serial não está aberta.")
 
-def get_data():
+def get_data(verify):
     print("Waiting for start signal ('s') from Arduino...")
     while True:
-        if ser.in_waiting > 0:  # Verifica se há dados na porta
-            start_signal = ser.read(1).decode()  # Lê 1 byte
-            if start_signal == 's':  # Se o sinal for 's', comece a processar
+        if ser.in_waiting > 0:
+            start_signal = ser.read(1).decode()  
+            if start_signal == 's':  
                 print("Start signal received. Beginning data processing.")
                 break  
 
@@ -62,17 +66,18 @@ def get_data():
             id = int(data_str[1:])
             print(f"Trash Type: {trash_type}, ID: {id}")
             # print("trash_verify: ", trash_verify(data_str))
-            send_data(trash_verify(data_str))
+            send_data(trash_verify(data_str, verify))
         else:
             time.sleep(0.1)
 
 if __name__ == "__main__":
     try:
         while trash_scenarios <= 3:
-            while trash_number > 0:
-                get_data()
-            trash_number = 3
-            trash_scenarios += 1
+            get_data(verify)
+            if(trash_number == 3):
+                trash_scenarios += 1
+            if(trash_number == 6):
+                trash_scenarios += 1
     finally:
         if ser.is_open:
             ser.close()

@@ -1,13 +1,14 @@
 Cenario,Endereco,Tipo,Nome
-1,054214226072,organico,casca de banana
+1,035009005003,organico,casca de banana
 1,116137083233,reciclavel,lata de refrigerante
-1,094022066160,reciclavel,jornal
-2,146110119180,organico,espinha de peixe
-2,035009005003,reciclavel,garrafa de vidro
-2,240076068164,reciclavel,copo plastico
-3,038069007158,organico,casca de ovo
-3,160051046165,organico,miolo da maca
-3,197198172165,reciclavel,garrafa pet
+1,123025165185,reciclavel,jornal
+2,094022066160,organico,espinha de peixe
+2,096208184164,organico,casca de laranja
+2,240076068164,reciclavel,garrafa de vidro
+2,038069007158,reciclavel,copo plastico
+3,160051046165,organico,casca de ovo
+3,197198172165,organico,miolo da maca
+3,023191162121,reciclavel,garrafa pet
 
 
 
